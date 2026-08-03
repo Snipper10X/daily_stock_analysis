@@ -877,6 +877,15 @@ def run_full_analysis(
                 current_time=analysis_reference_time,
             )
 
+        # A successful market review must not hide a complete stock-analysis
+        # failure.  Without this guard the workflow remains green and sends a
+        # market-only email because aggregate stock reports require results.
+        if stock_codes and not results and not args.dry_run:
+            raise RuntimeError(
+                f"全部 {len(stock_codes)} 只自选股分析失败；"
+                "已停止大盘复盘和邮件发送，请检查上方逐股错误日志"
+            )
+
         if should_use_daily_market_context and not market_context_summary:
             (
                 market_context_summary,
